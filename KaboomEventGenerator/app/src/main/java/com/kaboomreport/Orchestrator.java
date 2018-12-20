@@ -23,10 +23,15 @@ final class Orchestrator {
     private static final String SERVER_ULR = "http://192.168.1.5:8000/event";
     private static final String FILE_NAME = "last_exception.json";
 
+    private static final AppDataStorage appDataStorage = new AppDataStorage();
+    private static AppData appData = null;
+
     private Orchestrator() {
     }
 
-    public static void reportLaunch() {
+    public static void reportLaunch(Context context) {
+        ensureAppDataLoaded(context);
+
         OnSuccess<Boolean> onSuccess = new OnSuccess<Boolean>() {
             @Override
             public void call(Boolean result) {
@@ -52,7 +57,9 @@ final class Orchestrator {
             @Override
             public Boolean getResult() {
                 String event = String.format(
-                        "{ \"t\": \"S\", \"dt\": \"%s\" }", getDateTimeString());
+                        "{\"t\":\"S\",\"u\":\"%s\",\"dt\":\"%s\"}",
+                        appData.getUserId().toString(),
+                        getDateTimeString());
                 return HttpClient.trySend(SERVER_ULR, event);
             }
         };
@@ -61,6 +68,8 @@ final class Orchestrator {
     }
 
     public static void saveCrashInfo(Throwable e, Context context) {
+        ensureAppDataLoaded(context);
+
         // Get exception stack trace for details
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -75,7 +84,8 @@ final class Orchestrator {
 
         // Construct event
         final String event = String.format(
-                "{ \"t\": \"C\", \"dt\": \"%s\", \"m\": \"%s\", \"d\": \"%s\" }",
+                "{\"t\":\"C\",\"u\":\"%s\",\"dt\":\"%s\",\"m\":\"%s\",\"d\":\"%s\"}",
+                appData.getUserId().toString(),
                 getDateTimeString(),
                 cause.getMessage(),
                 details);
@@ -87,6 +97,16 @@ final class Orchestrator {
         String event = loadCrashInfo(context);
         if (event != null) {
             reportCrash(event, context);
+        }
+    }
+
+    private static void ensureAppDataLoaded(Context context) {
+        if (appData == null) {
+            appData = appDataStorage.getAppData(context);
+            if (appData == null) {
+                appData = new AppData();
+                appDataStorage.saveAppData(appData, context);
+            }
         }
     }
 

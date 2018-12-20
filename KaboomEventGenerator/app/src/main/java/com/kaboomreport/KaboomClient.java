@@ -9,7 +9,7 @@ public final class KaboomClient {
     private KaboomClient() {}
 
     public static void reportLaunch(Context context) {
-        Orchestrator.reportLaunch();
+        Orchestrator.reportLaunch(context);
     }
 
     public static void saveCrashInfo(Throwable e, Context context) {
