@@ -33,7 +33,6 @@ final class HttpClient {
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Content-Length", String.valueOf(data.length));
-            connection.setRequestProperty("Authorization", "Token 1af538baa9045a84c0e889f672baf83ff24"); // TODO:
 
             connection.setDoInput(true);
 

@@ -6,7 +6,6 @@ import android.util.Log;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,16 +19,29 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 final class Orchestrator {
-    private static final String SERVER_ULR = "http://192.168.1.5:8000/event";
+    private static final String SERVER_ULR = "http://192.168.1.5:8000/event"; // TODO: set correct URL
     private static final String FILE_NAME = "last_exception.json";
 
     private static final AppDataStorage appDataStorage = new AppDataStorage();
     private static AppData appData = null;
+    private static String appCode = null;
 
     private Orchestrator() {
     }
 
+    public static void configure(String appCode) {
+        if (appCode == null || appCode.length() == 0) {
+            throw new IllegalArgumentException("appCode cannot be empty");
+        }
+        Orchestrator.appCode = appCode;
+    }
+
     public static void reportLaunch(Context context) {
+        if (appCode == null) {
+            throw new IllegalStateException(
+                    "app code is not set. Call configure with the correct app code");
+        }
+
         ensureAppDataLoaded(context);
 
         OnSuccess<Boolean> onSuccess = new OnSuccess<Boolean>() {
@@ -57,7 +69,8 @@ final class Orchestrator {
             @Override
             public Boolean getResult() {
                 String event = String.format(
-                        "{\"t\":\"S\",\"u\":\"%s\",\"dt\":\"%s\"}",
+                        "{\"t\":\"S\",\"a\":\"%s\",\"u\":\"%s\",\"dt\":\"%s\"}",
+                        appCode,
                         appData.getUserId().toString(),
                         getDateTimeString());
                 return HttpClient.trySend(SERVER_ULR, event);
@@ -68,6 +81,11 @@ final class Orchestrator {
     }
 
     public static void saveCrashInfo(Throwable e, Context context) {
+        if (appCode == null) {
+            throw new IllegalStateException(
+                    "app code is not set. Call configure with the correct app code");
+        }
+
         ensureAppDataLoaded(context);
 
         // Get exception stack trace for details
@@ -84,7 +102,8 @@ final class Orchestrator {
 
         // Construct event
         final String event = String.format(
-                "{\"t\":\"C\",\"u\":\"%s\",\"dt\":\"%s\",\"m\":\"%s\",\"d\":\"%s\"}",
+                "{\"t\":\"C\",\"a\":\"%s\",\"u\":\"%s\",\"dt\":\"%s\",\"m\":\"%s\",\"d\":\"%s\"}",
+                appCode,
                 appData.getUserId().toString(),
                 getDateTimeString(),
                 cause.getMessage(),
@@ -94,6 +113,11 @@ final class Orchestrator {
     }
 
     public static void reportLastSavedCrash(Context context) {
+        if (appCode == null) {
+            throw new IllegalStateException(
+                    "app code is not set. Call configure with the correct app code");
+        }
+
         String event = loadCrashInfo(context);
         if (event != null) {
             reportCrash(event, context);

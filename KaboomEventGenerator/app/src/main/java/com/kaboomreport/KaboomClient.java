@@ -8,6 +8,10 @@ import android.content.Context;
 public final class KaboomClient {
     private KaboomClient() {}
 
+    public static void configure(String appCode) {
+        Orchestrator.configure(appCode);
+    }
+
     public static void reportLaunch(Context context) {
         Orchestrator.reportLaunch(context);
     }

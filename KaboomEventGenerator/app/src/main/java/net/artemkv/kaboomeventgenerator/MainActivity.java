@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        KaboomClient.configure("4398759834759"); // Use your app code
         KaboomClient.reportLaunch(this);
         KaboomClient.reportLastSavedCrash(this);
     }
