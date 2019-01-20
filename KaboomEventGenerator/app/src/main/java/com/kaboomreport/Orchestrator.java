@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 final class Orchestrator {
-    private static final String SERVER_ULR = "http://192.168.1.5:8000/event"; // TODO: set correct URL
+    private static final String SERVER_ULR = "http://192.168.99.101:30600/event"; // TODO: set correct URL
     private static final String FILE_NAME = "last_exception.json";
 
     private static final AppDataStorage appDataStorage = new AppDataStorage();
